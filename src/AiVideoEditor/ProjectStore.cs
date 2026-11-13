@@ -1,6 +1,7 @@
 // Project save/load. Plain JSON beside the exe, in projects/.
 // The updater never touches projects/ (see Updater.cs), so a self-update
 // can never wipe prompts.
+using System.IO;
 using System.Text.Json;
 
 namespace AiVideoEditor;

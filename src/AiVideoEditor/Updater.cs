@@ -12,6 +12,7 @@
 // ponytail: this is the whole updater. No update framework, no service,
 // no registry. A failed check is silent; the app keeps working.
 using System.Diagnostics;
+using System.IO;
 using System.IO.Compression;
 using System.Net.Http;
 

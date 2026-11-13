@@ -7,6 +7,7 @@
 //
 // Defensive by design: a medal-sorter DB without any triage_* tables yet
 // (never triaged) imports as "everything, unfiltered" instead of crashing.
+using System.IO;
 using System.Text.Json;
 using Microsoft.Data.Sqlite;
 

@@ -2,6 +2,7 @@
 // editor now and the AI renderer later. A project is an ordered list of
 // clips, each with trim points and a free-text prompt for the AI.
 // Paths are absolute so a project works outside triage / outside W:\medal.
+using System.IO;
 using System.Text.Json.Serialization;
 
 namespace AiVideoEditor;
