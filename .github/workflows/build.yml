@@ -1,0 +1,64 @@
+# Builds the WPF app on a real Windows runner and publishes a portable
+# zip to the rolling `latest` release, which the in-app custom updater
+# (Updater.cs) checks via version.txt.
+#
+# WPF cannot build on Linux/macOS runners, so this is windows-only by
+# necessity, not preference. Pattern mirrors the Kikitan portable workflow:
+# dotnet publish single-file, version.txt = commit SHA, gh release upload
+# --clobber to a rolling tag.
+
+name: Build AiVideoEditor portable
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-portable:
+    name: Build portable zip
+    runs-on: windows-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 9
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Publish app (self-contained, single-file)
+        env:
+          DOTNET_CLI_TELEMETRY_OPTOUT: 1
+        run: |
+          dotnet publish src/AiVideoEditor/AiVideoEditor.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -o src/AiVideoEditor/publish/app
+          $env:GITHUB_SHA | Out-File -FilePath src/AiVideoEditor/publish/app/version.txt -NoNewline
+
+      - name: Create portable zip
+        run: |
+          Compress-Archive -Path src\AiVideoEditor\publish\app\* -DestinationPath AiVideoEditor-portable.zip -Force
+          Copy-Item src\AiVideoEditor\publish\app\AiVideoEditor.exe -Destination AiVideoEditor.exe
+          Copy-Item src\AiVideoEditor\publish\app\version.txt -Destination version.txt
+
+      - name: Upload portable zip
+        uses: actions/upload-artifact@v4
+        with:
+          name: AiVideoEditor-portable
+          path: AiVideoEditor-portable.zip
+          if-no-files-found: error
+
+      - name: Publish to GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          $tag = "latest"
+          gh release view $tag 2>$null
+          if ($LASTEXITCODE -ne 0) {
+            gh release create $tag --prerelease `
+              --title "AiVideoEditor (latest)" `
+              --notes "Latest automated build. Download AiVideoEditor-portable.zip, extract anywhere, run AiVideoEditor.exe. It updates itself in place."
+          }
+          gh release upload $tag AiVideoEditor-portable.zip AiVideoEditor.exe version.txt --clobber

@@ -1,0 +1,15 @@
+# .NET
+bin/
+obj/
+*.user
+*.suo
+.vs/
+
+# Build output (never commit the published exe/zip; Actions builds those)
+publish/
+*.zip
+
+# Local user data (beside the exe at runtime; never commit prompts)
+projects/
+config.json
+version.txt
