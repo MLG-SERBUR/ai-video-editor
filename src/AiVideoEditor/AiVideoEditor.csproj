@@ -10,10 +10,6 @@
     <RootNamespace>AiVideoEditor</RootNamespace>
   </PropertyGroup>
 
-  <ItemGroup>
-    <!-- Single NuGet dep: read medal-sorter/triage clip_data.sqlite.
-         Everything else is .NET stdlib. -->
-    <PackageReference Include="Microsoft.Data.Sqlite" Version="9.0.0" />
-  </ItemGroup>
+  <!-- Zero NuGet deps: .NET stdlib only. -->
 
 </Project>

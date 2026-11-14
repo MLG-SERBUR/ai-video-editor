@@ -73,10 +73,6 @@ public partial class MainWindow : Window
             }
         };
 
-        browseDbButton.Click += (_, _) => BrowseDb();
-        browseMedalButton.Click += (_, _) => BrowseMedalRoot();
-        importButton.Click += (_, _) => ImportFromTriage();
-
         checkUpdateButton.Click += async (_, _) =>
         {
             statusText.Text = "Checking for updates...";
@@ -307,49 +303,6 @@ public partial class MainWindow : Window
     {
         var total = _durationSeconds > 0 ? $"{_durationSeconds:0.0}s" : "?";
         timeLabel.Text = $"{preview.Position.TotalSeconds:0.0}s / {total}";
-    }
-
-    // --- Triage import ---
-
-    private void BrowseDb()
-    {
-        var dlg = new OpenFileDialog { Filter = "SQLite database (*.sqlite)|*.sqlite|All files (*.*)|*.*" };
-        if (dlg.ShowDialog() == true) triageDbText.Text = dlg.FileName;
-    }
-
-    private void BrowseMedalRoot()
-    {
-        // No FolderBrowserDialog in WPF stdlib; pick any file inside the
-        // Medal root and take its directory.
-        var dlg = new OpenFileDialog { Filter = "All files (*.*)|*.*", Title = "Pick any file inside the Medal root" };
-        if (dlg.ShowDialog() == true)
-            medalRootText.Text = Path.GetDirectoryName(dlg.FileName) ?? medalRootText.Text;
-    }
-
-    private void ImportFromTriage()
-    {
-        if (!File.Exists(triageDbText.Text))
-        {
-            MessageBox.Show("Pick clip_data.sqlite first.", "Import");
-            return;
-        }
-        if (!Directory.Exists(medalRootText.Text))
-        {
-            MessageBox.Show("Medal root folder not found.", "Import");
-            return;
-        }
-        try
-        {
-            var collection = string.IsNullOrWhiteSpace(collectionText.Text)
-                ? null : collectionText.Text.Trim();
-            var imported = TriageImporter.Import(triageDbText.Text, medalRootText.Text, collection);
-            foreach (var item in imported)
-                _project.Clips.Add(item.Clip);
-            MarkDirty();
-            RefreshTimeline();
-            statusText.Text = $"Imported {imported.Count} kept clip(s) from triage.";
-        }
-        catch (Exception ex) { MessageBox.Show(ex.Message, "Import failed"); }
     }
 
     // --- Helpers ---

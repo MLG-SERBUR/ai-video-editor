@@ -24,41 +24,12 @@
               Visibility="Collapsed" Background="#FFD9EDD9"/>
     </StackPanel>
 
-    <!-- Global prompt + triage import -->
-    <Grid Grid.Row="1" Margin="8,0,8,6">
-      <Grid.ColumnDefinitions>
-        <ColumnDefinition Width="*"/>
-        <ColumnDefinition Width="*"/>
-      </Grid.ColumnDefinitions>
-      <StackPanel Grid.Column="0" Margin="0,0,8,0">
-        <TextBlock Text="Project prompt (for the AI, applies to the whole video):" FontWeight="Bold"/>
-        <TextBox x:Name="globalPromptText" Height="44" TextWrapping="Wrap" AcceptsReturn="True"
-                 VerticalScrollBarVisibility="Auto"/>
-      </StackPanel>
-      <StackPanel Grid.Column="1">
-        <TextBlock Text="Import from triage (clip_data.sqlite, read-only):" FontWeight="Bold"/>
-        <Grid>
-          <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*"/>
-            <ColumnDefinition Width="Auto"/>
-          </Grid.ColumnDefinitions>
-          <TextBox x:Name="triageDbText" Margin="0,0,4,0"/>
-          <Button x:Name="browseDbButton" Grid.Column="1" Content="Browse…" Padding="8,2"/>
-        </Grid>
-        <Grid Margin="0,4,0,0">
-          <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*"/>
-            <ColumnDefinition Width="Auto"/>
-            <ColumnDefinition Width="110"/>
-            <ColumnDefinition Width="Auto"/>
-          </Grid.ColumnDefinitions>
-          <TextBox x:Name="medalRootText" Text="W:\medal" Margin="0,0,4,0"/>
-          <Button x:Name="browseMedalButton" Grid.Column="1" Content="Medal root…" Padding="8,2" Margin="0,0,4,0"/>
-          <TextBox x:Name="collectionText" Margin="0,0,4,0" ToolTip="Collection name (blank = all kept clips)"/>
-          <Button x:Name="importButton" Grid.Column="3" Content="Import" Padding="10,2"/>
-        </Grid>
-      </StackPanel>
-    </Grid>
+    <!-- Global prompt -->
+    <StackPanel Grid.Row="1" Margin="8,0,8,6">
+      <TextBlock Text="Project prompt (for the AI, applies to the whole video):" FontWeight="Bold"/>
+      <TextBox x:Name="globalPromptText" Height="44" TextWrapping="Wrap" AcceptsReturn="True"
+               VerticalScrollBarVisibility="Auto"/>
+    </StackPanel>
 
     <!-- Main: timeline | preview | details -->
     <Grid Grid.Row="2" Margin="8,0,8,6">
@@ -124,7 +95,7 @@
         <TextBox x:Name="gameText" IsReadOnly="True"/>
         <TextBlock Text="Groups:" Margin="0,6,0,0"/>
         <TextBox x:Name="groupsText" IsReadOnly="True"/>
-        <TextBlock Text="Note (from triage):" Margin="0,6,0,0"/>
+        <TextBlock Text="Note:" Margin="0,6,0,0"/>
         <TextBox x:Name="noteText" IsReadOnly="True" Height="52" TextWrapping="Wrap"
                  VerticalScrollBarVisibility="Auto"/>
         <TextBlock Text="Prompt (AI edit instruction for this clip):" Margin="0,6,0,0" FontWeight="Bold"/>

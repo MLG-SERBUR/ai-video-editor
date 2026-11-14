@@ -19,10 +19,9 @@ The project file is the contract between the two.
 - Per-clip **Prompt** (AI edit instruction) plus a project-wide **Global prompt**.
 - Per-clip **Note** (context, e.g. what happened in the clip).
 - Save/load projects as JSON (`*.aive.json`, default in `projects/` beside the exe).
-- **Import from triage**: reads medal-sorter's `clip_data.sqlite` read-only,
-  imports kept, non-discarded clips (optionally one collection), edit
-  preferred over raw source, chronological like triage. `edit_idea` becomes
-  the clip Prompt, `note` becomes the Note, game/groups become tags.
+- Add videos directly with **Add videos…**. No import from anywhere else in
+  v1: the triage/sqlite import was removed 2026-11-13 after it crashed on
+  import. A middle layer between triage and the editor comes later.
 - **Export ffmpeg**: writes `<project>.concat.txt` + `<project>.ffmpeg.bat`
   (trim + concat, `-c copy`). Cuts on keyframes; frame-accurate cuts need a
   re-encode pass (later).
@@ -39,7 +38,7 @@ The project file is the contract between the two.
   "GlobalPrompt": "Fast-paced montage, keep game audio up on funny moments.",
   "Clips": [
     {
-      "SourcePath": "W:\\medal\\Clips\\Marvel Rivals\\clip.mp4",
+      "SourcePath": "D:\\Clips\\Marvel Rivals\\clip.mp4",
       "InSeconds": 2.5,
       "OutSeconds": 14.0,
       "Prompt": "Slow-mo the clutch, zoom the health bar.",
@@ -70,12 +69,11 @@ There is no `.sln` on purpose — the workflow publishes the `.csproj` directly.
 
 ```
 src/AiVideoEditor/
-  AiVideoEditor.csproj   net9.0-windows, WPF, one NuGet dep (Microsoft.Data.Sqlite)
+  AiVideoEditor.csproj   net9.0-windows, WPF, zero NuGet deps
   App.xaml(.cs)          entry point
   MainWindow.xaml(.cs)   timeline + preview + per-clip prompt UI
   Models.cs              Project / TimelineClip (the editor↔AI contract)
   ProjectStore.cs        JSON save/load + ffmpeg concat export
-  TriageImporter.cs      clip_data.sqlite read-only import
   Updater.cs             custom in-place updater (version.txt + zip + batch)
 ```
 
@@ -86,8 +84,7 @@ src/AiVideoEditor/
   is ~100 lines reusing the Kikitan `Updater.cs` pattern.
 - Portable folder, not Velopack: updates happen in the same directory the
   program runs from. `config.json` and `projects/` survive updates.
-- Triage is an import adapter, not a dependency: the editor runs standalone
-  on any videos.
-- No new dependencies without a reason. One NuGet package total
-  (`Microsoft.Data.Sqlite`, for the triage import). Video preview is
+- Standalone only: clips come in via Add videos…. No triage/sqlite import
+  (removed after an import crash; a middle layer comes later).
+- No new dependencies without a reason. Zero NuGet packages. Video preview is
   `MediaElement`; deterministic rendering is `ffmpeg` CLI via the export.
