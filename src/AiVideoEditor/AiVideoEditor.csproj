@@ -1,15 +1,41 @@
-<Project Sdk="Microsoft.NET.Sdk">
-
+<!-- Uno Platform single project. One codebase, three targets:
+     Windows (unpackaged WinAppSDK, portable exe + custom updater),
+     Android (APK), WebAssembly (GitHub Pages — this is the iOS path:
+     open the site in Safari, no App Store, no Mac build, no signing).
+     No iOS target on purpose: the web build covers iPhone users. -->
+<Project Sdk="Uno.Sdk">
   <PropertyGroup>
-    <OutputType>WinExe</OutputType>
-    <TargetFramework>net9.0-windows</TargetFramework>
-    <Nullable>enable</Nullable>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <UseWPF>true</UseWPF>
-    <AssemblyName>AiVideoEditor</AssemblyName>
-    <RootNamespace>AiVideoEditor</RootNamespace>
-  </PropertyGroup>
+    <TargetFrameworks>net10.0-android;net10.0-windows10.0.26100;net10.0-browserwasm</TargetFrameworks>
 
-  <!-- Zero NuGet deps: .NET stdlib only. -->
+    <OutputType>Exe</OutputType>
+    <UnoSingleProject>true</UnoSingleProject>
+
+    <!-- Display name -->
+    <ApplicationTitle>AI Video Editor</ApplicationTitle>
+    <!-- App Identifier -->
+    <ApplicationId>com.mlgserbur.aivideoeditor</ApplicationId>
+    <!-- Versions -->
+    <ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
+    <ApplicationVersion>1</ApplicationVersion>
+    <!-- Package Publisher -->
+    <ApplicationPublisher>MLG-SERBUR</ApplicationPublisher>
+    <!-- Package Description -->
+    <Description>AI Video Editor — trim, split, and per-clip AI edit prompts. Uno Platform (Windows, Android, Web).</Description>
+
+    <!--
+      UnoFeatures are used to quickly add and manage features enabled for your app.
+      https://aka.platform.uno/singleproject-features
+    -->
+    <UnoFeatures>
+      MediaPlayerElement;
+    </UnoFeatures>
+
+    <!-- Unpackaged WinAppSDK app: a plain exe folder, no MSIX. The custom
+         updater (Updater.cs, Windows only) replaces that folder in place.
+         Self-contained Windows App Runtime so the portable zip runs with
+         no separate runtime install. -->
+    <WindowsPackageType>None</WindowsPackageType>
+    <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
+  </PropertyGroup>
 
 </Project>

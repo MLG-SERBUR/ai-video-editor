@@ -1,5 +1,8 @@
-// Custom in-place updater. No Velopack, no LocalAppData, no installer.
-// Portable folder: the exe updates itself where it sits.
+#if WINDOWS
+// Custom in-place updater. Windows only: Android updates through the
+// APK, the web build is redeployed from Actions, neither needs this.
+// No Velopack, no LocalAppData, no installer. Portable folder: the exe
+// updates itself where it sits.
 //
 // Pattern (same as KikitanTranslator.WinForms/Updater.cs): on startup,
 // compare local version.txt (commit SHA, written by Actions) with the
@@ -92,3 +95,4 @@ public sealed class Updater
         return File.Exists(path) ? File.ReadAllText(path).Trim() : "unknown";
     }
 }
+#endif

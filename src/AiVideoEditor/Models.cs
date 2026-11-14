@@ -1,7 +1,9 @@
 // Project model. One file on purpose: this is the contract between the
 // editor now and the AI renderer later. A project is an ordered list of
 // clips, each with trim points and a free-text prompt for the AI.
-// Paths are absolute so a project works no matter where the videos came from.
+// SourcePath is absolute on Windows/Android so a project works no matter
+// where the videos came from. On the web build the browser gives no real
+// path, so SourcePath is just the file name there.
 using System.IO;
 using System.Text.Json.Serialization;
 
@@ -9,7 +11,7 @@ namespace AiVideoEditor;
 
 public sealed class TimelineClip
 {
-    // Absolute path to the source video file.
+    // Absolute path to the source video file (file name only on web).
     public string SourcePath { get; set; } = "";
     // Trim in/out in seconds. Out <= In means "full clip" (no trim).
     public double InSeconds { get; set; }
@@ -21,6 +23,10 @@ public sealed class TimelineClip
     // Tags for filtering only.
     public string Game { get; set; } = "";
     public List<string> Groups { get; set; } = new();
+
+    // Full length once the preview has loaded it. Runtime only, never saved.
+    [JsonIgnore]
+    public double DurationSeconds { get; set; }
 
     [JsonIgnore]
     public string DisplayName => Path.GetFileName(SourcePath);

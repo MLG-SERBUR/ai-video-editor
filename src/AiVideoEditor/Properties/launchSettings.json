@@ -1,0 +1,19 @@
+{
+  "profiles": {
+    // This profile is first in order for dotnet run to pick it up by default
+    "AiVideoEditor (WebAssembly)": {
+      "commandName": "Project",
+      "dotnetRunMessages": true,
+      "launchBrowser": true,
+      "applicationUrl": "http://localhost:5000",
+      "inspectUri": "{wsProtocol}://{url.hostname}:{url.port}/_framework/debug/ws-proxy?browser={browserInspectUri}",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      }
+    },
+    "AiVideoEditor (WinAppSDK Unpackaged)": {
+      "commandName": "Project",
+      "compatibleTargetFramework": "windows"
+    }
+  }
+}

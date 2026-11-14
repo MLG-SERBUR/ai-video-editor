@@ -1,0 +1,44 @@
+//-:cnd:noEmit
+using Android.App;
+using Android.Content.PM;
+using Android.OS;
+using Android.Views;
+using Android.Widget;
+ //+:cnd:noEmit
+#if useMsalAuthentication
+using Microsoft.Identity.Client;
+#endif
+
+namespace AiVideoEditor.Droid;
+
+[Activity(
+    MainLauncher = true,
+    ConfigurationChanges = global::Uno.UI.ActivityHelper.AllConfigChanges,
+    WindowSoftInputMode = SoftInput.AdjustNothing | SoftInput.StateHidden,
+    Exported = true
+)]
+#if useAndroidTV
+[IntentFilter(
+    new[] { Android.Content.Intent.ActionMain },
+    Categories = new[] {
+        Android.Content.Intent.CategoryLauncher,
+        Android.Content.Intent.CategoryLeanbackLauncher
+    })]
+#endif
+public class MainActivity : Uno.UI.Runtime.Android.ApplicationActivity
+{
+    protected override void OnCreate(Bundle? savedInstanceState)
+    {
+        global::AndroidX.Core.SplashScreen.SplashScreen.InstallSplashScreen(this);
+
+        base.OnCreate(savedInstanceState);
+    }
+
+#if useMsalAuthentication
+    protected override void OnActivityResult(int requestCode, Result resultCode, Android.Content.Intent? data)
+    {
+        base.OnActivityResult(requestCode, resultCode, data);
+        AuthenticationContinuationHelper.SetAuthenticationContinuationEventArgs(requestCode, resultCode, data);
+    }
+#endif
+}

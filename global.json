@@ -1,0 +1,11 @@
+{
+  // Pins the Uno.Sdk version for the whole repo. To update Uno, bump
+  // the version here; see https://aka.platform.uno/upgrade-uno-packages
+  "msbuild-sdks": {
+    "Uno.Sdk": "7.0.22"
+  },
+  "sdk": {
+    "version": "10.0.100",
+    "rollForward": "latestFeature"
+  }
+}

@@ -1,8 +1,9 @@
-// Project save/load. Plain JSON beside the exe, in projects/.
-// The updater never touches projects/ (see Updater.cs), so a self-update
-// can never wipe prompts.
-using System.IO;
+// Project save/load. Plain JSON, through the platform file pickers so
+// the same code works on Windows, Android, and the web build (where a
+// save is a browser download). The updater never touches projects/
+// (see Updater.cs), so a self-update can never wipe prompts.
 using System.Text.Json;
+using Windows.Storage;
 
 namespace AiVideoEditor;
 
@@ -13,31 +14,31 @@ public static class ProjectStore
         WriteIndented = true,
     };
 
-    public static string ProjectsDir =>
-        Path.Combine(AppContext.BaseDirectory, "projects");
+    public static string ToJson(Project project) =>
+        JsonSerializer.Serialize(project, JsonOptions);
 
-    public static void Save(Project project, string path)
+    public static Project FromJson(string json) =>
+        JsonSerializer.Deserialize<Project>(json, JsonOptions)
+            ?? throw new InvalidDataException("Empty project file.");
+
+    public static async Task SaveToFileAsync(Project project, StorageFile file)
     {
-        Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(path))!);
-        var json = JsonSerializer.Serialize(project, JsonOptions);
-        // Atomic-ish: write temp, then move over. A crash mid-save must
-        // not leave a half-written project file behind.
-        var tmp = path + ".tmp";
-        File.WriteAllText(tmp, json);
-        File.Move(tmp, path, overwrite: true);
+        var json = ToJson(project);
+        await FileIO.WriteTextAsync(file, json);
     }
 
-    public static Project Load(string path)
+    public static async Task<Project> LoadFromFileAsync(StorageFile file)
     {
-        var json = File.ReadAllText(path);
-        return JsonSerializer.Deserialize<Project>(json, JsonOptions)
-            ?? throw new InvalidDataException($"Empty project file: {path}");
+        var json = await FileIO.ReadTextAsync(file);
+        return FromJson(json);
     }
 
+#if WINDOWS
     // ffmpeg concat-demuxer export for the deterministic part only
     // (trim + order). Writes <project>.concat.txt next to the project file
     // plus a <project>.ffmpeg.bat that runs it. -c copy cuts on keyframes;
     // frame-accurate cuts need a re-encode pass (later).
+    // Windows only: it needs real file paths and a local ffmpeg.
     public static string ExportFfmpeg(Project project, string projectPath)
     {
         var dir = Path.GetDirectoryName(Path.GetFullPath(projectPath))!;
@@ -63,4 +64,5 @@ public static class ProjectStore
             "pause\r\n");
         return batPath;
     }
+#endif
 }

@@ -1,90 +1,76 @@
 # AI Video Editor
 
-A portable Windows video editor whose primary job is holding **prompts per clip**
-for an AI to perform the edits later. Basic regular editing tools included:
-trim, split, reorder, preview.
+Trim, split, and reorder clips — and hold a per-clip prompt for the AI
+to perform the edits (the AI renderer itself is later work). One project,
+three targets, one codebase: [Uno Platform](https://platform.uno) 7.0,
+.NET 10, C# + WinUI XAML.
 
-No Python. No web. No installer. No LocalAppData. Unzip anywhere, run
-`AiVideoEditor.exe`. It updates itself in place, in the same folder.
+The WPF version lasted one day: the UI was confusing, and WPF is
+Windows-only. Uno gives the same editor on Windows, Android, and the
+web — and the web build is the iOS path (open it in Safari; no App
+Store, no Mac build, no signing).
 
-## Status
+## Get it
 
-Scaffold (v1). The editor holds the project; the AI renderer is later work.
-The project file is the contract between the two.
+Rolling `latest` release: https://github.com/MLG-SERBUR/ai-video-editor/releases/tag/latest
 
-## What it does now
+- **Windows** — `AiVideoEditor-portable.zip`. Unzip anywhere and run
+  `AiVideoEditor.exe`. No installer, no LocalAppData. It checks the
+  `latest` release on startup and offers "Restart to update" when a
+  new build lands; the update replaces the folder in place and never
+  touches `projects/` or `config.json`.
+- **Android** — `AiVideoEditor-android.apk`. Sideload it (debug-signed).
+- **Web / iPhone** — open the GitHub Pages site from the repo
+  (Settings → Pages). `AiVideoEditor-web.zip` on the release is the
+  same site as a backup if you want to host it yourself.
 
-- Add videos, reorder (Move up/down), remove, split at playhead, trim In/Out
-  per clip, preview with play/pause + seek.
-- Per-clip **Prompt** (AI edit instruction) plus a project-wide **Global prompt**.
-- Per-clip **Note** (context, e.g. what happened in the clip).
-- Save/load projects as JSON (`*.aive.json`, default in `projects/` beside the exe).
-- Add videos directly with **Add videos…**. No import from anywhere else in
-  v1: the triage/sqlite import was removed 2026-11-13 after it crashed on
-  import. A middle layer between triage and the editor comes later.
-- **Export ffmpeg**: writes `<project>.concat.txt` + `<project>.ffmpeg.bat`
-  (trim + concat, `-c copy`). Cuts on keyframes; frame-accurate cuts need a
-  re-encode pass (later).
-- **Self-update**: checks `version.txt` on the rolling `latest` release at
-  startup. On mismatch it downloads `AiVideoEditor-portable.zip` and shows
-  "Restart to update". Applying extracts to temp, then a batch script copies
-  over after exit, excluding `config.json` and `projects/`, restarts the exe.
+## Use it
 
-## Project file
+Top to bottom, one job at a time:
 
-```json
-{
-  "Name": "Friday friends",
-  "GlobalPrompt": "Fast-paced montage, keep game audio up on funny moments.",
-  "Clips": [
-    {
-      "SourcePath": "D:\\Clips\\Marvel Rivals\\clip.mp4",
-      "InSeconds": 2.5,
-      "OutSeconds": 14.0,
-      "Prompt": "Slow-mo the clutch, zoom the health bar.",
-      "Note": "Low-health survival",
-      "Game": "Marvel Rivals",
-      "Groups": ["friday_friends"]
-    }
-  ]
-}
-```
+1. **Add videos** — pick clips. They land in the timeline in order.
+2. **Preview** — tap a clip, play/pause, drag the seek bar.
+   **Split here** cuts the selected clip at the playhead.
+3. **Timeline** — tap a clip to select it. Move up / Move down /
+   Remove live in the details panel below.
+4. **Details** — Prompt (what the AI should do with this clip),
+   Note (what happened in it), Trim in / Trim out sliders
+   (or "Set in/out here" from the playhead; Out = 0 means full clip).
+5. **Project name + Global prompt** up top apply to the whole project.
+6. **Save / Open** — projects are JSON (`*.aive.json`). On the web
+   build, Save downloads the file and Open uploads it.
 
-`OutSeconds <= InSeconds` means "full clip" (no trim).
+## Export (Windows only)
 
-## Build
+Export writes `<project>.concat.txt` + `<project>.ffmpeg.bat` next to
+the project file: an ffmpeg concat of the trims in order
+(`-c copy`, so cuts land on keyframes; frame-accurate re-encode is
+later work). Run the `.bat` to render. It needs real file paths and a
+local ffmpeg, so the button only exists on Windows.
 
-GitHub Actions (`.github/workflows/build.yml`, `windows-latest`) publishes
-on every push to `main` plus manual dispatch:
+## Web limits
 
-- `dotnet publish -c Release -r win-x64 --self-contained -p:PublishSingleFile=true`
-- `version.txt` = commit SHA
-- `AiVideoEditor-portable.zip` (exe + `version.txt`) + `version.txt` uploaded
-  to the rolling `latest` release (created if missing).
+The web build edits prompts, trims, and order like the others, but
+the browser gives no real file paths (clips are stored by name) and
+there is no local ffmpeg — so no Export, and a web-saved project
+needs its clips re-added on desktop before exporting. Projects are
+still the same JSON, so a project started on your phone opens on
+Windows.
 
-Local build needs .NET 9 SDK on Windows; WPF does not build on Linux/macOS.
-There is no `.sln` on purpose — the workflow publishes the `.csproj` directly.
+## Project format
 
-## Layout
+`*.aive.json`: `{ Name, GlobalPrompt, Clips: [{ SourcePath, InSeconds,
+OutSeconds, Prompt, Note, Game, Groups }] }`. This JSON is the contract
+between the editor now and the AI renderer later. `OutSeconds <=
+InSeconds` means "full clip".
 
-```
-src/AiVideoEditor/
-  AiVideoEditor.csproj   net9.0-windows, WPF, zero NuGet deps
-  App.xaml(.cs)          entry point
-  MainWindow.xaml(.cs)   timeline + preview + per-clip prompt UI
-  Models.cs              Project / TimelineClip (the editor↔AI contract)
-  ProjectStore.cs        JSON save/load + ffmpeg concat export
-  Updater.cs             custom in-place updater (version.txt + zip + batch)
-```
+## Build it
 
-## Decisions (locked)
+Actions builds all three targets on every push to `main`
+(`.github/workflows/build.yml`). The Windows job needs no local SDK
+install; the Uno version is pinned in `global.json` (`Uno.Sdk 7.0.22`).
 
-- WPF + C#, not Python, not web, not Qt, not WinUI 3. See discussion:
-  WPF builds in Actions in 1–2 min, single-file exe, and the custom updater
-  is ~100 lines reusing the Kikitan `Updater.cs` pattern.
-- Portable folder, not Velopack: updates happen in the same directory the
-  program runs from. `config.json` and `projects/` survive updates.
-- Standalone only: clips come in via Add videos…. No triage/sqlite import
-  (removed after an import crash; a middle layer comes later).
-- No new dependencies without a reason. Zero NuGet packages. Video preview is
-  `MediaElement`; deterministic rendering is `ffmpeg` CLI via the export.
+History: scaffolded 2026-11-13 as WPF, triage/sqlite import added then
+removed the same night (it crashed on first use; a middle layer between
+triage and the editor is still to come), rewritten as Uno 2026-11-14
+for the simpler UI and the phone/web path.
