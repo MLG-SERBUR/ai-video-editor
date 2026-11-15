@@ -63,7 +63,12 @@ jobs:
         env:
           DOTNET_CLI_TELEMETRY_OPTOUT: 1
         run: |
-          dotnet publish src/AiVideoEditor/AiVideoEditor.csproj -f net10.0-windows10.0.26100 -c Release -r win-x64 --self-contained -o publish/app
+          # No -r here on purpose: a forced RID leaks into every TFM's
+          # restore, and the Android TFM then wants the nonexistent
+          # Microsoft.NETCore.App.Runtime.Mono.win-x64 pack (NU1102).
+          # Uno's WinAppSDK target defaults the RID to win-<host arch>
+          # itself when none is given.
+          dotnet publish src/AiVideoEditor/AiVideoEditor.csproj -f net10.0-windows10.0.26100 -c Release --self-contained -o publish/app
           $env:GITHUB_SHA | Out-File -FilePath publish/app/version.txt -NoNewline
 
       - name: Create portable zip
