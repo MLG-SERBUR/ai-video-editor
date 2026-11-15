@@ -22,15 +22,6 @@
       Executable="$targetnametoken$.exe"
       EntryPoint="$targetentrypoint$">
       <uap:VisualElements BackgroundColor="transparent" />
-<!--#if (useProtocolRedirect)-->
-      <Extensions>
-      <uap:Extension Category="windows.protocol">
-        <uap:Protocol Name="myprotocol">
-          <uap:DisplayName>MyProtocol</uap:DisplayName>
-        </uap:Protocol>
-      </uap:Extension>
-    </Extensions>
-<!--#endif-->
     </Application>
   </Applications>
 
