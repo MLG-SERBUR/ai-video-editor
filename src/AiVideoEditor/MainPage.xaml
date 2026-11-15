@@ -57,12 +57,12 @@
       <Grid ColumnDefinitions="Auto,Auto,Auto" ColumnSpacing="8">
         <TextBlock Text="Trim in (s)" VerticalAlignment="Center" />
         <TextBox x:Name="inText" Grid.Column="1" Width="100" InputScope="Number" />
-        <Button x:Name="setInButton" Grid.Column="2" Content="Set in here" />
+        <Button x:Name="setInButton" Grid.Column="2" Content="Mark In" />
       </Grid>
       <Grid ColumnDefinitions="Auto,Auto,Auto" ColumnSpacing="8">
         <TextBlock Text="Trim out (s)" VerticalAlignment="Center" />
         <TextBox x:Name="outText" Grid.Column="1" Width="100" InputScope="Number" />
-        <Button x:Name="setOutButton" Grid.Column="2" Content="Set out here" />
+        <Button x:Name="setOutButton" Grid.Column="2" Content="Mark Out" />
       </Grid>
       <StackPanel Orientation="Horizontal" Spacing="8">
         <Button x:Name="moveUpButton" Content="Move up" />

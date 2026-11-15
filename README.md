@@ -33,8 +33,8 @@ Top to bottom, one job at a time:
 3. **Timeline** — tap a clip to select it. Move up / Move down /
    Remove live in the details panel below.
 4. **Details** — Prompt (what the AI should do with this clip),
-   Trim in / Trim out in seconds (type them, or "Set in/out here"
-   from the playhead; Out = 0 means full clip).
+   Trim in / Trim out in seconds (type them, or **Mark In** /
+   **Mark Out** from the playhead; Out = 0 means full clip).
 5. **Save / Open** — projects are JSON (`*.aive.json`). On the web
    build, Save downloads the file and Open uploads it.
 
