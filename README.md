@@ -2,13 +2,13 @@
 
 Trim, split, and reorder clips — and hold a per-clip prompt for the AI
 to perform the edits (the AI renderer itself is later work). One project,
-three targets, one codebase: [Uno Platform](https://platform.uno) 7.0,
+two targets, one codebase: [Uno Platform](https://platform.uno) 7.0,
 .NET 10, C# + WinUI XAML.
 
 The WPF version lasted one day: the UI was confusing, and WPF is
-Windows-only. Uno gives the same editor on Windows, Android, and the
-web — and the web build is the iOS path (open it in Safari; no App
-Store, no Mac build, no signing).
+Windows-only. Uno gives the same editor on Windows and the web — and
+the web build is the iOS path (open it in Safari; no App Store, no Mac
+build, no signing).
 
 ## Get it
 
@@ -19,7 +19,6 @@ Rolling `latest` release: https://github.com/MLG-SERBUR/ai-video-editor/releases
   `latest` release on startup and offers "Restart to update" when a
   new build lands; the update replaces the folder in place and never
   touches `projects/` or `config.json`.
-- **Android** — `AiVideoEditor-android.apk`. Sideload it (debug-signed).
 - **Web / iPhone** — open the GitHub Pages site from the repo
   (Settings → Pages). `AiVideoEditor-web.zip` on the release is the
   same site as a backup if you want to host it yourself.
@@ -34,10 +33,9 @@ Top to bottom, one job at a time:
 3. **Timeline** — tap a clip to select it. Move up / Move down /
    Remove live in the details panel below.
 4. **Details** — Prompt (what the AI should do with this clip),
-   Note (what happened in it), Trim in / Trim out sliders
-   (or "Set in/out here" from the playhead; Out = 0 means full clip).
-5. **Project name + Global prompt** up top apply to the whole project.
-6. **Save / Open** — projects are JSON (`*.aive.json`). On the web
+   Trim in / Trim out in seconds (type them, or "Set in/out here"
+   from the playhead; Out = 0 means full clip).
+5. **Save / Open** — projects are JSON (`*.aive.json`). On the web
    build, Save downloads the file and Open uploads it.
 
 ## Export (Windows only)
@@ -59,18 +57,21 @@ Windows.
 
 ## Project format
 
-`*.aive.json`: `{ Name, GlobalPrompt, Clips: [{ SourcePath, InSeconds,
-OutSeconds, Prompt, Note, Game, Groups }] }`. This JSON is the contract
+`*.aive.json`: `{ Name, Clips: [{ SourcePath, InSeconds,
+OutSeconds, Prompt, Game, Groups }] }`. This JSON is the contract
 between the editor now and the AI renderer later. `OutSeconds <=
-InSeconds` means "full clip".
+InSeconds` means "full clip". Older project files with a global
+prompt or per-clip notes still load; those fields are just ignored.
 
 ## Build it
 
-Actions builds all three targets on every push to `main`
-(`.github/workflows/build.yml`). The Windows job needs no local SDK
-install; the Uno version is pinned in `global.json` (`Uno.Sdk 7.0.22`).
+Actions builds both targets on every push to `main`
+(`.github/workflows/build.yml`). The Uno version is pinned in
+`global.json` (`Uno.Sdk 7.0.22`).
 
 History: scaffolded 2026-11-13 as WPF, triage/sqlite import added then
 removed the same night (it crashed on first use; a middle layer between
 triage and the editor is still to come), rewritten as Uno 2026-11-14
-for the simpler UI and the phone/web path.
+for the simpler UI and the phone/web path. Android target dropped
+2026-11-15; the UI was simplified the same day (global prompt, note
+field, trim sliders, and the details ScrollViewer all removed).

@@ -1,8 +1,8 @@
 // Project model. One file on purpose: this is the contract between the
 // editor now and the AI renderer later. A project is an ordered list of
 // clips, each with trim points and a free-text prompt for the AI.
-// SourcePath is absolute on Windows/Android so a project works no matter
-// where the videos came from. On the web build the browser gives no real
+// SourcePath is absolute on Windows so a project works no matter where
+// the videos came from. On the web build the browser gives no real
 // path, so SourcePath is just the file name there.
 using System.IO;
 using System.Text.Json.Serialization;
@@ -18,8 +18,6 @@ public sealed class TimelineClip
     public double OutSeconds { get; set; }
     // Instruction for the AI edit of this clip. Free text.
     public string Prompt { get; set; } = "";
-    // Context: what happened in the clip.
-    public string Note { get; set; } = "";
     // Tags for filtering only.
     public string Game { get; set; } = "";
     public List<string> Groups { get; set; } = new();
@@ -42,7 +40,6 @@ public sealed class TimelineClip
         InSeconds = InSeconds,
         OutSeconds = OutSeconds,
         Prompt = Prompt,
-        Note = Note,
         Game = Game,
         Groups = new List<string>(Groups),
     };
@@ -51,7 +48,6 @@ public sealed class TimelineClip
 public sealed class Project
 {
     public string Name { get; set; } = "Untitled";
-    public string GlobalPrompt { get; set; } = "";
     public List<TimelineClip> Clips { get; set; } = new();
 
     // Total trimmed length, where known. Clips with Out <= In count as

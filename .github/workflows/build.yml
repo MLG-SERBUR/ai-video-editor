@@ -1,23 +1,19 @@
-# Builds the Uno Platform app on real runners and publishes all three
+# Builds the Uno Platform app on real runners and publishes both
 # targets to the rolling `latest` release:
 #   Windows  -> AiVideoEditor-portable.zip (+ version.txt, the in-app
 #               custom updater's check file)
-#   Android  -> AiVideoEditor-android.apk (debug-signed, sideload it)
 #   Web      -> GitHub Pages deploy (this is the iOS path: open the site
 #               in Safari; no App Store, no Mac build, no signing) plus
 #               AiVideoEditor-web.zip on the release as a backup.
 #
-# Jobs run chained (windows -> android -> web) so the three
+# Jobs run chained (windows -> web) so the two
 # `gh release upload --clobber` calls never race each other on the
 # same tag. The windows job creates the `latest` prerelease if missing.
 #
-# Pages deploy needs the repo's Pages source set to "GitHub Actions"
-# (Settings -> Pages -> Build and deployment). If that isn't set, the
-# web job's deploy step fails and the zip on the release still works.
-#
-# Uno 7.0 / .NET 10. The csproj is a single Uno.Sdk project with three
-# TFMs (android, windows, browserwasm); restore touches all three, so
-# every job installs the android + wasm-tools workloads first.
+# Uno 7.0 / .NET 10. The csproj is a single Uno.Sdk project with two
+# TFMs (windows, browserwasm); restore touches both, so every job
+# installs the wasm-tools workload first. No Android target: dropped
+# 2026-11-15, nobody asked for it.
 
 name: Build AiVideoEditor (Uno)
 
@@ -48,26 +44,18 @@ jobs:
         with:
           dotnet-version: '10.0.x'
 
-      - name: Setup Java 17 (Android workload needs a JDK)
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: '17'
-
       - name: Install workloads
         env:
           DOTNET_CLI_TELEMETRY_OPTOUT: 1
-        run: dotnet workload install android wasm-tools
+        run: dotnet workload install wasm-tools
 
       - name: Publish app (unpackaged, self-contained)
         env:
           DOTNET_CLI_TELEMETRY_OPTOUT: 1
         run: |
           # No -r here on purpose: a forced RID leaks into every TFM's
-          # restore, and the Android TFM then wants the nonexistent
-          # Microsoft.NETCore.App.Runtime.Mono.win-x64 pack (NU1102).
-          # Uno's WinAppSDK target defaults the RID to win-<host arch>
-          # itself when none is given.
+          # restore. Uno's WinAppSDK target defaults the RID to
+          # win-<host arch> itself when none is given.
           dotnet publish src/AiVideoEditor/AiVideoEditor.csproj -f net10.0-windows10.0.26100 -c Release --self-contained -o publish/app
           $env:GITHUB_SHA | Out-File -FilePath publish/app/version.txt -NoNewline
 
@@ -85,7 +73,7 @@ jobs:
           if ($LASTEXITCODE -ne 0) {
             gh release create $tag --prerelease `
               --title "AiVideoEditor (latest)" `
-              --notes "Latest automated build. Windows: AiVideoEditor-portable.zip. Android: AiVideoEditor-android.apk. Web: GitHub Pages site (or AiVideoEditor-web.zip)."
+              --notes "Latest automated build. Windows: AiVideoEditor-portable.zip. Web: GitHub Pages site (or AiVideoEditor-web.zip)."
           }
           gh release upload $tag AiVideoEditor-portable.zip version.txt --clobber
 
@@ -95,53 +83,9 @@ jobs:
           name: AiVideoEditor-portable
           path: AiVideoEditor-portable.zip
 
-  android:
-    name: Android APK
-    needs: windows
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Setup .NET 10
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: '10.0.x'
-
-      - name: Setup Java 17
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: '17'
-
-      - name: Install workloads
-        env:
-          DOTNET_CLI_TELEMETRY_OPTOUT: 1
-        run: dotnet workload install android wasm-tools
-
-      - name: Publish APK
-        env:
-          DOTNET_CLI_TELEMETRY_OPTOUT: 1
-        run: |
-          dotnet publish src/AiVideoEditor/AiVideoEditor.csproj -f net10.0-android -c Release -o publish/android
-          apk=$(find publish/android -name '*.apk' | head -n 1)
-          echo "APK: $apk"
-          cp "$apk" AiVideoEditor-android.apk
-
-      - name: Upload to latest release
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: gh release upload latest AiVideoEditor-android.apk --clobber
-
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: AiVideoEditor-android
-          path: AiVideoEditor-android.apk
-
   web:
     name: Web (GitHub Pages)
-    needs: android
+    needs: windows
     runs-on: ubuntu-latest
     environment:
       name: github-pages
@@ -155,16 +99,10 @@ jobs:
         with:
           dotnet-version: '10.0.x'
 
-      - name: Setup Java 17
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: '17'
-
       - name: Install workloads
         env:
           DOTNET_CLI_TELEMETRY_OPTOUT: 1
-        run: dotnet workload install android wasm-tools
+        run: dotnet workload install wasm-tools
 
       - name: Publish WebAssembly site
         env:

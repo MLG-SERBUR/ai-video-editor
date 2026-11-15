@@ -1,11 +1,12 @@
-<!-- Uno Platform single project. One codebase, three targets:
-     Windows (unpackaged WinAppSDK, portable exe + custom updater),
-     Android (APK), WebAssembly (GitHub Pages — this is the iOS path:
-     open the site in Safari, no App Store, no Mac build, no signing).
-     No iOS target on purpose: the web build covers iPhone users. -->
+<!-- Uno Platform single project. One codebase, two targets:
+     Windows (unpackaged WinAppSDK, portable exe + custom updater) and
+     WebAssembly (GitHub Pages — this is the iOS path: open the site
+     in Safari, no App Store, no Mac build, no signing).
+     No iOS target on purpose: the web build covers iPhone users.
+     No Android target: dropped 2026-11-15, nobody asked for it. -->
 <Project Sdk="Uno.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>net10.0-android;net10.0-windows10.0.26100;net10.0-browserwasm</TargetFrameworks>
+    <TargetFrameworks>net10.0-windows10.0.26100;net10.0-browserwasm</TargetFrameworks>
 
     <OutputType>Exe</OutputType>
     <UnoSingleProject>true</UnoSingleProject>
@@ -20,7 +21,7 @@
     <!-- Package Publisher -->
     <ApplicationPublisher>MLG-SERBUR</ApplicationPublisher>
     <!-- Package Description -->
-    <Description>AI Video Editor — trim, split, and per-clip AI edit prompts. Uno Platform (Windows, Android, Web).</Description>
+    <Description>AI Video Editor — trim, split, and per-clip AI edit prompts. Uno Platform (Windows, Web).</Description>
 
     <!--
       UnoFeatures are used to quickly add and manage features enabled for your app.

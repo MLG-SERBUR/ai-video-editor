@@ -1,7 +1,6 @@
 #if WINDOWS
-// Custom in-place updater. Windows only: Android updates through the
-// APK, the web build is redeployed from Actions, neither needs this.
-// No Velopack, no LocalAppData, no installer. Portable folder: the exe
+// Custom in-place updater. Windows only: the web build redeploys from
+// Actions and needs no updater. No Velopack, no LocalAppData, no installer. Portable folder: the exe
 // updates itself where it sits.
 //
 // Pattern (same as KikitanTranslator.WinForms/Updater.cs): on startup,

@@ -1,5 +1,5 @@
 // Project save/load. Plain JSON, through the platform file pickers so
-// the same code works on Windows, Android, and the web build (where a
+// the same code works on Windows and the web build (where a
 // save is a browser download). The updater never touches projects/
 // (see Updater.cs), so a self-update can never wipe prompts.
 using System.Text.Json;

@@ -1,7 +1,7 @@
-<!-- Simplified UI: one job at a time, top to bottom, same layout on
-     every target (phone, desktop, web). Big preview, timeline strip,
-     one selected clip's details. Metadata (game/groups) is not shown —
-     it still loads from old project files, it just isn't editing UI. -->
+<!-- Top to bottom, no scrolling panels: big preview, timeline strip,
+     one selected clip's details. Per-clip prompt is the whole point;
+     there is no global prompt and no note field. Trim is two plain
+     second boxes plus "Set in/out here" — no sliders. -->
 <Page x:Class="AiVideoEditor.MainPage"
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -19,13 +19,8 @@
       <Button x:Name="restartUpdateButton" Content="Restart to update" Visibility="Collapsed" />
     </StackPanel>
 
-    <!-- Project -->
-    <StackPanel Grid.Row="1" Spacing="6">
-      <TextBox x:Name="projectNameText" Header="Project name" PlaceholderText="Untitled" />
-      <TextBox x:Name="globalPromptText" Header="Global prompt (applies to every clip)"
-               PlaceholderText="e.g. Fast-paced montage, keep game audio low"
-               TextWrapping="Wrap" AcceptsReturn="True" MaxHeight="72" />
-    </StackPanel>
+    <!-- Project name -->
+    <TextBox Grid.Row="1" x:Name="projectNameText" Header="Project name" PlaceholderText="Untitled" />
 
     <!-- Preview -->
     <Grid Grid.Row="2" RowDefinitions="*,Auto,Auto">
@@ -54,31 +49,26 @@
     </ListView>
 
     <!-- Selected clip -->
-    <ScrollViewer Grid.Row="4" MaxHeight="280" VerticalScrollBarVisibility="Auto">
-      <StackPanel Spacing="6">
-        <TextBlock x:Name="sourceText" Text="" TextWrapping="Wrap" Opacity="0.7" />
-        <TextBox x:Name="promptText" Header="Prompt for this clip"
-                 PlaceholderText="What should the AI do with this clip?"
-                 TextWrapping="Wrap" AcceptsReturn="True" MinHeight="64" />
-        <TextBox x:Name="noteText" Header="Note" PlaceholderText="What happened in this clip?" />
-        <Grid ColumnDefinitions="Auto,*,Auto">
-          <TextBlock Text="Trim in" VerticalAlignment="Center" />
-          <Slider x:Name="inSlider" Grid.Column="1" Minimum="0" Maximum="1" Margin="8,0" />
-          <TextBlock x:Name="inValueText" Grid.Column="2" Text="0.0s" VerticalAlignment="Center" />
-        </Grid>
-        <Grid ColumnDefinitions="Auto,*,Auto">
-          <TextBlock Text="Trim out" VerticalAlignment="Center" />
-          <Slider x:Name="outSlider" Grid.Column="1" Minimum="0" Maximum="1" Margin="8,0" />
-          <TextBlock x:Name="outValueText" Grid.Column="2" Text="full" VerticalAlignment="Center" />
-        </Grid>
-        <StackPanel Orientation="Horizontal" Spacing="8">
-          <Button x:Name="setInButton" Content="Set in here" />
-          <Button x:Name="setOutButton" Content="Set out here" />
-          <Button x:Name="moveUpButton" Content="Move up" />
-          <Button x:Name="moveDownButton" Content="Move down" />
-          <Button x:Name="removeButton" Content="Remove" />
-        </StackPanel>
+    <StackPanel Grid.Row="4" Spacing="6">
+      <TextBlock x:Name="sourceText" Text="" TextWrapping="Wrap" Opacity="0.7" />
+      <TextBox x:Name="promptText" Header="Prompt for this clip"
+               PlaceholderText="What should the AI do with this clip?"
+               TextWrapping="Wrap" AcceptsReturn="True" MinHeight="64" />
+      <Grid ColumnDefinitions="Auto,Auto,Auto" ColumnSpacing="8">
+        <TextBlock Text="Trim in (s)" VerticalAlignment="Center" />
+        <TextBox x:Name="inText" Grid.Column="1" Width="100" InputScope="Number" />
+        <Button x:Name="setInButton" Grid.Column="2" Content="Set in here" />
+      </Grid>
+      <Grid ColumnDefinitions="Auto,Auto,Auto" ColumnSpacing="8">
+        <TextBlock Text="Trim out (s)" VerticalAlignment="Center" />
+        <TextBox x:Name="outText" Grid.Column="1" Width="100" InputScope="Number" />
+        <Button x:Name="setOutButton" Grid.Column="2" Content="Set out here" />
+      </Grid>
+      <StackPanel Orientation="Horizontal" Spacing="8">
+        <Button x:Name="moveUpButton" Content="Move up" />
+        <Button x:Name="moveDownButton" Content="Move down" />
+        <Button x:Name="removeButton" Content="Remove" />
       </StackPanel>
-    </ScrollViewer>
+    </StackPanel>
   </Grid>
 </Page>

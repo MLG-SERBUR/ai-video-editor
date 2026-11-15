@@ -1,6 +1,6 @@
 // Editor page: the WPF MainWindow logic, ported to Uno/WinUI.
 // MediaElement -> MediaPlayerElement, dialogs -> Storage pickers so the
-// same code runs on Windows, Android, and the web build.
+// same code runs on Windows and the web build.
 using System.IO;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -43,10 +43,6 @@ public sealed partial class MainPage : Page
         {
             if (!_loadingDetails) { _project.Name = projectNameText.Text; MarkDirty(); }
         };
-        globalPromptText.TextChanged += (_, _) =>
-        {
-            if (!_loadingDetails) { _project.GlobalPrompt = globalPromptText.Text; MarkDirty(); }
-        };
 
         addVideosButton.Click += async (_, _) => await AddVideosAsync();
         moveUpButton.Click += (_, _) => MoveSelected(-1);
@@ -66,36 +62,21 @@ public sealed partial class MainPage : Page
                 Player.PlaybackSession.Position = TimeSpan.FromSeconds(positionSlider.Value);
         };
 
-        inSlider.ValueChanged += (_, _) =>
+        inText.LostFocus += (_, _) => ApplyTrimText();
+        outText.LostFocus += (_, _) => ApplyTrimText();
+        inText.KeyDown += (_, e) =>
         {
-            if (_loadingDetails || _selected is null) return;
-            _selected.InSeconds = Math.Max(0, inSlider.Value);
-            inValueText.Text = $"{_selected.InSeconds:0.0}s";
-            MarkDirty();
-            RefreshTimeline();
+            if (e.Key == Windows.System.VirtualKey.Enter) ApplyTrimText();
         };
-        outSlider.ValueChanged += (_, _) =>
+        outText.KeyDown += (_, e) =>
         {
-            if (_loadingDetails || _selected is null) return;
-            _selected.OutSeconds = Math.Max(0, outSlider.Value);
-            outValueText.Text = _selected.OutSeconds > _selected.InSeconds
-                ? $"{_selected.OutSeconds:0.0}s" : "full";
-            MarkDirty();
-            RefreshTimeline();
+            if (e.Key == Windows.System.VirtualKey.Enter) ApplyTrimText();
         };
         promptText.TextChanged += (_, _) =>
         {
             if (!_loadingDetails && _selected is not null)
             {
                 _selected.Prompt = promptText.Text;
-                MarkDirty();
-            }
-        };
-        noteText.TextChanged += (_, _) =>
-        {
-            if (!_loadingDetails && _selected is not null)
-            {
-                _selected.Note = noteText.Text;
                 MarkDirty();
             }
         };
@@ -113,9 +94,9 @@ public sealed partial class MainPage : Page
         _updater.UpdateReady += () => DispatcherQueue.TryEnqueue(() =>
             restartUpdateButton.Visibility = Visibility.Visible);
 #else
-        // Export and the self-updater are Windows-only: Android updates
-        // through the APK, the web build redeploys from Actions, and
-        // ffmpeg export needs real file paths and a local ffmpeg.
+        // Export and the self-updater are Windows-only: the web build
+        // redeploys from Actions, and ffmpeg export needs real file
+        // paths and a local ffmpeg.
         exportButton.Visibility = Visibility.Collapsed;
         checkUpdateButton.Visibility = Visibility.Collapsed;
 #endif
@@ -293,9 +274,8 @@ public sealed partial class MainPage : Page
                 previewPlayer.Source = null;
                 playPauseButton.Content = "Play";
                 sourceText.Text = "";
-                inSlider.Value = 0; outSlider.Value = 0;
-                inValueText.Text = "0.0s"; outValueText.Text = "full";
-                noteText.Text = ""; promptText.Text = "";
+                inText.Text = "0"; outText.Text = "0";
+                promptText.Text = "";
                 return;
             }
 
@@ -320,14 +300,8 @@ public sealed partial class MainPage : Page
                 statusText.Text = $"Missing file: {_selected.SourcePath}";
             }
             sourceText.Text = _selected.SourcePath;
-            inSlider.Maximum = Math.Max(_selected.DurationSeconds, 1);
-            outSlider.Maximum = Math.Max(_selected.DurationSeconds, 1);
-            inSlider.Value = _selected.InSeconds;
-            outSlider.Value = _selected.OutSeconds;
-            inValueText.Text = $"{_selected.InSeconds:0.0}s";
-            outValueText.Text = _selected.OutSeconds > _selected.InSeconds
-                ? $"{_selected.OutSeconds:0.0}s" : "full";
-            noteText.Text = _selected.Note;
+            inText.Text = _selected.InSeconds.ToString("0.###");
+            outText.Text = _selected.OutSeconds.ToString("0.###");
             promptText.Text = _selected.Prompt;
             positionSlider.Maximum = Math.Max(_selected.DurationSeconds, 1);
             UpdateTimeLabel();
@@ -348,8 +322,6 @@ public sealed partial class MainPage : Page
                 if (duration > 0)
                 {
                     _selected.DurationSeconds = duration;
-                    inSlider.Maximum = duration;
-                    outSlider.Maximum = duration;
                     positionSlider.Maximum = duration;
                 }
                 if (_selected.InSeconds > 0)
@@ -390,6 +362,17 @@ public sealed partial class MainPage : Page
         LoadSelected();
     }
 
+    private void ApplyTrimText()
+    {
+        if (_loadingDetails || _selected is null) return;
+        if (double.TryParse(inText.Text, out var i)) _selected.InSeconds = Math.Max(0, i);
+        if (double.TryParse(outText.Text, out var o)) _selected.OutSeconds = Math.Max(0, o);
+        if (_selected.OutSeconds > 0 && _selected.OutSeconds <= _selected.InSeconds)
+            _selected.OutSeconds = 0; // back to "full" rather than invalid range
+        MarkDirty();
+        RefreshTimeline();
+    }
+
     private void UpdateTimeLabel()
     {
         var pos = Player?.PlaybackSession.Position.TotalSeconds ?? 0;
@@ -428,7 +411,6 @@ public sealed partial class MainPage : Page
         try
         {
             projectNameText.Text = _project.Name;
-            globalPromptText.Text = _project.GlobalPrompt;
         }
         finally { _loadingDetails = false; }
         RefreshTimeline();
